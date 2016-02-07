@@ -88,7 +88,7 @@ if [[ $FULLWIPE == "yes" ]]; then
 rm -rf /var/lib/mysql
 rm -rf /opt/vfilter
 rm -rf /var/vmail
-rm -rf /var/www
+rm -rf /var/www/mailcow
 fi
 rm -rf /etc/fuglu
 rm -rf /usr/local/lib/python2.7/dist-packages/fuglu*
@@ -102,7 +102,7 @@ rm -f /etc/fufix_version
 rm -f /etc/mailcow_version
 rm -f /etc/{cron.daily,cron.weekly,cron.hourly,cron.monthly}/mailcow_backup
 rm -rf /etc/mail/postfixadmin
-rm -rf /var/www/{mail,dav}
+rm -rf /var/www/mailcow/{mail,dav}
 rm -f /usr/local/sbin/mc_*
 rm -f /etc/cron.daily/mc_clean_spam_aliases
 rm -rf /var/run/fetchmail

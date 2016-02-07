@@ -457,7 +457,7 @@ DatabaseMirror clamav.inode.at" >> /etc/clamav/freshclam.conf
 			fi
 			;;
 		webserver)
-			mkdir -p /var/www/ 2> /dev/null
+			mkdir -p /var/www/mailcow/ 2> /dev/null
 			if [[ ${httpd_platform} == "nginx" ]]; then
 				# Some systems miss the default php5-fpm listener, reinstall it now
 				apt-get -o Dpkg::Options::="--force-confmiss" install -y --reinstall php5-fpm > /dev/null
@@ -484,19 +484,19 @@ DatabaseMirror clamav.inode.at" >> /etc/clamav/freshclam.conf
 				a2enmod rewrite ssl headers cgi > /dev/null 2>&1
 			fi
 			mkdir /var/lib/php5/sessions 2> /dev/null
-			cp -R webserver/htdocs/{mail,dav} /var/www/
-			tar xf /var/www/dav/vendor.tar -C /var/www/dav/ ; rm /var/www/dav/vendor.tar
-			find /var/www/{dav,mail} -type d -exec chmod 755 {} \;
-			find /var/www/{dav,mail} -type f -exec chmod 644 {} \;
-			sed -i "/date_default_timezone_set/c\date_default_timezone_set('${sys_timezone}');" /var/www/dav/server.php
+			cp -R webserver/htdocs/{mail,dav} /var/www/mailcow/
+			tar xf /var/www/mailcow/dav/vendor.tar -C /var/www/mailcow/dav/ ; rm /var/www/mailcow/dav/vendor.tar
+			find /var/www/mailcow/{dav,mail} -type d -exec chmod 755 {} \;
+			find /var/www/mailcow/{dav,mail} -type f -exec chmod 644 {} \;
+			sed -i "/date_default_timezone_set/c\date_default_timezone_set('${sys_timezone}');" /var/www/mailcow/dav/server.php
 			touch /var/mailcow/mailbox_backup_env
 			echo none > /var/mailcow/log/pflogsumm.log
-			sed -i "s/my_dbhost/${my_dbhost}/g" /var/www/mail/inc/vars.inc.php /var/www/dav/server.php
-			sed -i "s/my_mailcowpass/${my_mailcowpass}/g" /var/www/mail/inc/vars.inc.php /var/www/dav/server.php
-			sed -i "s/my_mailcowuser/${my_mailcowuser}/g" /var/www/mail/inc/vars.inc.php /var/www/dav/server.php
-			sed -i "s/my_mailcowdb/${my_mailcowdb}/g" /var/www/mail/inc/vars.inc.php /var/www/dav/server.php
-			sed -i "s/httpd_dav_subdomain/$httpd_dav_subdomain/g" /var/www/mail/inc/vars.inc.php
-			chown -R www-data: /var/www/{.,mail,dav} /var/lib/php5/sessions /var/mailcow/mailbox_backup_env
+			sed -i "s/my_dbhost/${my_dbhost}/g" /var/www/mailcow/mail/inc/vars.inc.php /var/www/mailcow/dav/server.php
+			sed -i "s/my_mailcowpass/${my_mailcowpass}/g" /var/www/mailcow/mail/inc/vars.inc.php /var/www/mailcow/dav/server.php
+			sed -i "s/my_mailcowuser/${my_mailcowuser}/g" /var/www/mailcow/mail/inc/vars.inc.php /var/www/mailcow/dav/server.php
+			sed -i "s/my_mailcowdb/${my_mailcowdb}/g" /var/www/mailcow/mail/inc/vars.inc.php /var/www/mailcow/dav/server.php
+			sed -i "s/httpd_dav_subdomain/$httpd_dav_subdomain/g" /var/www/mailcow/mail/inc/vars.inc.php
+			chown -R www-data: /var/www/mailcow/{.,mail,dav} /var/lib/php5/sessions /var/mailcow/mailbox_backup_env
 			mysql --host ${my_dbhost} -u root -p${my_rootpw} ${my_mailcowdb} < webserver/htdocs/init.sql
 			if [[ -z $(mysql --host ${my_dbhost} -u root -p${my_rootpw} ${my_mailcowdb} -e "SHOW INDEX FROM propertystorage WHERE KEY_NAME = 'path_property';" -N -B) ]]; then
 				mysql --host ${my_dbhost} -u root -p${my_rootpw} ${my_mailcowdb} -e "CREATE UNIQUE INDEX path_property ON propertystorage (path(600), name(100));" -N -B
@@ -513,29 +513,29 @@ DatabaseMirror clamav.inode.at" >> /etc/clamav/freshclam.conf
 			fi
 			;;
 		roundcube)
-			mkdir -p /var/www/mail/rc
+			mkdir -p /var/www/mailcow/mail/rc
 			tar xf roundcube/inst/${roundcube_version}.tar -C roundcube/inst/
-			cp -R roundcube/inst/${roundcube_version}/* /var/www/mail/rc/
+			cp -R roundcube/inst/${roundcube_version}/* /var/www/mailcow/mail/rc/
 			if [[ $is_upgradetask != "yes" ]]; then
-				cp -R roundcube/conf/* /var/www/mail/rc/
-				sed -i "s/my_mailcowuser/${my_mailcowuser}/g" /var/www/mail/rc/plugins/password/config.inc.php
-				sed -i "s/my_mailcowpass/${my_mailcowpass}/g" /var/www/mail/rc/plugins/password/config.inc.php
-				sed -i "s/my_mailcowdb/${my_mailcowdb}/g" /var/www/mail/rc/plugins/password/config.inc.php
-				sed -i "s/my_dbhost/${my_dbhost}/g" /var/www/mail/rc/plugins/password/config.inc.php
-				sed -i "s/my_dbhost/${my_dbhost}/g" /var/www/mail/rc/config/config.inc.php
-				sed -i "s/my_rcuser/$my_rcuser/g" /var/www/mail/rc/config/config.inc.php
-				sed -i "s/my_rcpass/$my_rcpass/g" /var/www/mail/rc/config/config.inc.php
-				sed -i "s/my_rcdb/$my_rcdb/g" /var/www/mail/rc/config/config.inc.php
-				sed -i "s/conf_rcdeskey/$(genpasswd)/g" /var/www/mail/rc/config/config.inc.php
-				sed -i "s/MAILCOW_HOST.MAILCOW_DOMAIN/${sys_hostname}.${sys_domain}/g" /var/www/mail/rc/config/config.inc.php
-				mysql --host ${my_dbhost} -u ${my_rcuser} -p${my_rcpass} ${my_rcdb} < /var/www/mail/rc/SQL/mysql.initial.sql
+				cp -R roundcube/conf/* /var/www/mailcow/mail/rc/
+				sed -i "s/my_mailcowuser/${my_mailcowuser}/g" /var/www/mailcow/mail/rc/plugins/password/config.inc.php
+				sed -i "s/my_mailcowpass/${my_mailcowpass}/g" /var/www/mailcow/mail/rc/plugins/password/config.inc.php
+				sed -i "s/my_mailcowdb/${my_mailcowdb}/g" /var/www/mailcow/mail/rc/plugins/password/config.inc.php
+				sed -i "s/my_dbhost/${my_dbhost}/g" /var/www/mailcow/mail/rc/plugins/password/config.inc.php
+				sed -i "s/my_dbhost/${my_dbhost}/g" /var/www/mailcow/mail/rc/config/config.inc.php
+				sed -i "s/my_rcuser/$my_rcuser/g" /var/www/mailcow/mail/rc/config/config.inc.php
+				sed -i "s/my_rcpass/$my_rcpass/g" /var/www/mailcow/mail/rc/config/config.inc.php
+				sed -i "s/my_rcdb/$my_rcdb/g" /var/www/mailcow/mail/rc/config/config.inc.php
+				sed -i "s/conf_rcdeskey/$(genpasswd)/g" /var/www/mailcow/mail/rc/config/config.inc.php
+				sed -i "s/MAILCOW_HOST.MAILCOW_DOMAIN/${sys_hostname}.${sys_domain}/g" /var/www/mailcow/mail/rc/config/config.inc.php
+				mysql --host ${my_dbhost} -u ${my_rcuser} -p${my_rcpass} ${my_rcdb} < /var/www/mailcow/mail/rc/SQL/mysql.initial.sql
 			else
 				chmod +x roundcube/inst/${roundcube_version}/bin/installto.sh
-				roundcube/inst/${roundcube_version}/bin/installto.sh /var/www/mail/rc
+				roundcube/inst/${roundcube_version}/bin/installto.sh /var/www/mailcow/mail/rc
 			fi
-			chown -R www-data: /var/www/mail/rc
+			chown -R www-data: /var/www/mailcow/mail/rc
 			rm -rf roundcube/inst/${roundcube_version}
-			rm -rf /var/www/mail/rc/installer/
+			rm -rf /var/www/mailcow/mail/rc/installer/
 			;;
 		restartservices)
 			[[ -f /lib/systemd/systemd ]] && echo "$(textb [INFO]) - Restarting services, this may take a few seconds..."
@@ -626,7 +626,7 @@ A backup will be stored in ./before_upgrade_$timestamp
 	fi
 	echo -en "Creating backups in ./before_upgrade_$timestamp... \t"
 	mkdir before_upgrade_$timestamp
-	cp -R /var/www/mail/ before_upgrade_$timestamp/mail_wwwroot
+	cp -R /var/www/mailcow/mail/ before_upgrade_$timestamp/mail_wwwroot
 	mysqldump -u ${my_mailcowuser} -p${my_mailcowpass} ${my_mailcowdb} > backup_mailcow_db.sql 2>/dev/null
 	mysqldump -u ${my_rcuser} -p${my_rcpass} ${my_rcdb} > backup_roundcube_db.sql 2>/dev/null
 	cp -R /etc/{postfix,dovecot,spamassassin,${httpd_platform},fuglu,mysql,php5,clamav} before_upgrade_$timestamp/
@@ -673,8 +673,8 @@ A backup will be stored in ./before_upgrade_$timestamp
 
 	rm -rf /var/lib/php5/sessions/*
 	mkdir -p /var/mailcow/log
-	mv /var/www/MAILBOX_BACKUP /var/mailcow/mailbox_backup_env 2> /dev/null
-	mv /var/www/PFLOG /var/mailcow/log/pflogsumm.log 2> /dev/null
+	mv /var/www/mailcow/MAILBOX_BACKUP /var/mailcow/mailbox_backup_env 2> /dev/null
+	mv /var/www/mailcow/PFLOG /var/mailcow/log/pflogsumm.log 2> /dev/null
 
 	installtask webserver
 	returnwait "Webserver configuration" "Roundcube configuration"

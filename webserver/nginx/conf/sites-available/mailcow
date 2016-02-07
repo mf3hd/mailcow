@@ -5,7 +5,7 @@ server {
 	listen [::]:80;
 	server_name MAILCOW_HOST.MAILCOW_DOMAIN;
 	server_tokens off;
-	root /var/www/mail;
+	root /var/www/mailcow/mail;
 	return 301 https://$host$request_uri;
 }
 server {
@@ -30,7 +30,7 @@ server {
 	ssl_session_timeout 30m;
 	server_name MAILCOW_DAV_HOST.MAILCOW_DOMAIN;
 	server_tokens off;
-	root /var/www/dav;
+	root /var/www/mailcow/dav;
 	index server.php;
 	charset utf-8;
 	rewrite ^/.well-known/caldav /server.php redirect;
@@ -66,7 +66,7 @@ server {
 	add_header Strict-Transport-Security max-age=15768000;
 	ssl_session_timeout 30m;
 	client_max_body_size 25m;
-	root /var/www/mail;
+	root /var/www/mailcow/mail;
 	index index.html index.htm index.php;
 	error_page 502 /redir.html;
 	location /redir.html {

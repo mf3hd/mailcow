@@ -1,9 +1,9 @@
 <?php
 error_reporting(0);
-include_once "/var/www/mail/rc/config/config.inc.php";
-include_once "/var/www/mail/inc/vars.inc.php";
-include_once "/var/www/mail/pfadmin/config.inc.php";
-include_once "/var/www/mail/pfadmin/config.local.php";
+include_once "/var/www/mailcow/mail/rc/config/config.inc.php";
+include_once "/var/www/mailcow/mail/inc/vars.inc.php";
+include_once "/var/www/mailcow/mail/pfadmin/config.inc.php";
+include_once "/var/www/mailcow/mail/pfadmin/config.local.php";
 
 if(!empty($database_user)) {
 echo $database_host, PHP_EOL;
